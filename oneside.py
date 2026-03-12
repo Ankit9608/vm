@@ -116,7 +116,7 @@ def bot():
         # print(TARGET_ASSETS)
 
         endtime = response.get("endDate")
-        target_time = datetime.fromisoformat(endtime)
+        target_time = datetime.fromisoformat(endtime.replace("Z", "+00:00"))
         # FIX: skip already-expired markets immediately, don't bother connecting
         if datetime.now(timezone.utc) >= target_time:
             print(f"⏩ Market {initial_slug} already expired, skipping...")
