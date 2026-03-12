@@ -48,37 +48,38 @@ bet_down = threading.Event()
 
 
 def order_worker():
-    global buy_price
     print("started order worker")
-    while not placed_order.is_set():
-        try:
-            item = order_queue.get()
-        except Exception as e:
-            print(f"Error getting item from queue: {e}")
-            continue
-        # {"id": id_one, "price": major_side, "side": "UP"}
-        asset_id = item.get("id")
-        price = item.get("price")
-        price = math.floor(price * 100) / 100
-        side = item.get("side")
+    while True:
+        global buy_price
+        while not placed_order.is_set():
+            try:
+                item = order_queue.get()
+            except Exception as e:
+                print(f"Error getting item from queue: {e}")
+                continue
+            # {"id": id_one, "price": major_side, "side": "UP"}
+            asset_id = item.get("id")
+            price = item.get("price")
+            price = math.floor(price * 100) / 100
+            side = item.get("side")
 
-        if side == "UP":
-            buy_price = price
-            time.sleep(2)
-            bet_up.set()
-            print("placing order from thread", price, side)
-            placed_order.set()
-            while not order_queue.empty():
-                order_queue.get()
+            if side == "UP":
+                buy_price = price
+                time.sleep(2)
+                bet_up.set()
+                print("placing order from thread", price, side)
+                placed_order.set()
+                while not order_queue.empty():
+                    order_queue.get()
 
-        if side == "DOWN":
-            buy_price = price
-            time.sleep(2)
-            bet_down.set()
-            print("placing order from thread", price, side)
-            placed_order.set()
-            while not order_queue.empty():
-                order_queue.get()
+            if side == "DOWN":
+                buy_price = price
+                time.sleep(2)
+                bet_down.set()
+                print("placing order from thread", price, side)
+                placed_order.set()
+                while not order_queue.empty():
+                    order_queue.get()
 
 
 # ─── BOT ─────────────────────────────────────────────────────────────────────
@@ -307,7 +308,7 @@ def bot():
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    initial_slug = "btc-updown-5m-1773304500"
+    initial_slug = "btc-updown-5m-1773336000"
     buy_price = 0.0
     threading.Thread(target=order_worker, daemon=True).start()
     print("PID:", os.getpid())
