@@ -6,7 +6,6 @@ from datetime import datetime, timezone, timedelta
 
 # import ssl
 import websocket
-import peewee
 import urllib3
 import threading
 import queue
