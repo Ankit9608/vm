@@ -270,7 +270,7 @@ def bot():
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    initial_slug = "btc-updown-5m-1773205200"
+    initial_slug = "btc-updown-5m-1773293700"
     successfull = 0
     lost = 0
 
