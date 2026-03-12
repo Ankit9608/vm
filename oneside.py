@@ -285,7 +285,7 @@ def bot():
         if bet_down.is_set() or bet_up.is_set():
             print(f"✅✅✅ TRADE SUCCESSFUL!")
             print(
-                f"   Major: {buy_price:.3f}           Side:{"UP" if bet_up.is_set() else "DOWN" if bet_down.is_set() else None}"
+                f"   Major: {buy_price:.3f}           Side:{'UP' if bet_up.is_set() else 'DOWN' if bet_down.is_set() else None}"
             )
 
         elif not bet_down.is_set() and not bet_up.is_set():
