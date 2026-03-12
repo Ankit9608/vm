@@ -150,7 +150,8 @@ def bot():
             print("Reconnected")
 
         def on_pong(ws, message):
-            print("Pong recieved =", message)
+            pass
+            # print("Pong recieved =", message)
 
         def on_message(ws, message):
             global bet_for_up, bet_for_down
@@ -180,10 +181,10 @@ def bot():
                         if not bet_up.is_set() and not bet_down.is_set():
                             major_side = best_ask_one
                             major_side = math.floor(major_side * 100) / 100
-                            print(
-                                "up goes above 80 placing order for up.. 1 ---->",
-                                major_side,
-                            )
+                            # print(
+                            #     "up goes above 80 placing order for up.. 1 ---->",
+                            #     major_side,
+                            # )
                             if not placed_order.is_set():
                                 order_queue.put(
                                     {"id": id_one, "price": major_side, "side": "UP"}
@@ -194,10 +195,10 @@ def bot():
                             major_side = best_ask_one
                             major_side = math.floor(major_side * 100) / 100
 
-                            print(
-                                "down goes above 80 placing order for down.. 2---->",
-                                major_side,
-                            )
+                            # print(
+                            #     "down goes above 80 placing order for down.. 2---->",
+                            #     major_side,
+                            # )
                             if not placed_order.is_set():
 
                                 order_queue.put(
@@ -211,10 +212,10 @@ def bot():
                             major_side = best_ask_two
                             major_side = math.floor(major_side * 100) / 100
 
-                            print(
-                                "up goes above 80 placing order for up.. 3 ----->",
-                                major_side,
-                            )
+                            # print(
+                            #     "up goes above 80 placing order for up.. 3 ----->",
+                            #     major_side,
+                            # )
                             if not placed_order.is_set():
                                 order_queue.put(
                                     {"id": id_two, "price": major_side, "side": "UP"}
@@ -224,10 +225,10 @@ def bot():
                         if not bet_down.is_set() and not bet_up.is_set():
                             major_side = best_ask_two
                             major_side = math.floor(major_side * 100) / 100
-                            print(
-                                "down goes above 80 placing order for down... 4---->",
-                                major_side,
-                            )
+                            # print(
+                            #     "down goes above 80 placing order for down... 4---->",
+                            #     major_side,
+                            # )
                             if not placed_order.is_set():
                                 order_queue.put(
                                     {"id": id_one, "price": major_side, "side": "DOWN"}
@@ -252,11 +253,10 @@ def bot():
 
         def on_close(ws, code, msg):
             print(f"WebSocket closed: {code} - {msg}")
-            ping_stop.set()
             try:
                 ws.sock.close()
             except Exception as e:
-                print("excepion ", e)
+                print("excepion 4", e)
 
         # ── connect ───────────────────────────────────────────────────────
         ws = websocket.WebSocketApp(
