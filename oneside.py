@@ -19,6 +19,28 @@ from py_clob_client.constants import AMOY
 
 from py_clob_client.order_builder.constants import BUY
 
+from datetime import datetime
+import sys
+
+
+class Tee:
+    def __init__(self, filename):
+        self.file = open(filename, "a", buffering=1)
+        self.stdout = sys.stdout
+
+    def write(self, message):
+        if message.strip():
+            message = f"[{datetime.now()}] {message}"
+        self.stdout.write(message)
+        self.file.write(message)
+
+    def flush(self):
+        self.stdout.flush()
+        self.file.flush()
+
+
+sys.stdout = Tee("bot_log.txt")
+
 load_dotenv()
 host = os.getenv("CLOB_API_URL", "https://clob.polymarket.com")
 key = os.getenv("PRIVATE_KEY")
