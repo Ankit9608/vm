@@ -13,7 +13,7 @@ import math
 import os
 
 from py_clob_client.client import ClobClient
-from py_clob_client.clob_types import ApiCreds, OrderArgs
+from py_clob_client.clob_types import ApiCreds, OrderArgs, OrderType
 from dotenv import load_dotenv
 from py_clob_client.constants import AMOY
 
@@ -64,6 +64,8 @@ placed_order = threading.Event()
 bet_up = threading.Event()
 bet_down = threading.Event()
 
+signal_lock = threading.Lock()
+
 
 def order_worker():
     print("started order worker")
@@ -77,54 +79,69 @@ def order_worker():
                 continue
             # {"id": id_one, "price": major_side, "side": "UP"}
             asset_id = item.get("id")
+
             price = item.get("price")
             price = math.floor(price * 100) / 100
             side = item.get("side")
 
+            print(asset_id, price, side)
+
             if side == "UP":
-                buy_price = price
-                time.sleep(2)
-                order_args = OrderArgs(
-                    price=price,
-                    size=1,
-                    side=BUY,
-                    token_id=asset_id,
+                signed_order = client.create_order(
+                    OrderArgs(
+                        price=price,
+                        size=2,
+                        side=BUY,
+                        token_id=asset_id,
+                    ),
+                    # options={
+                    #     "tick_size": "0.01",
+                    #     "neg_risk": False,
+                    # },
                 )
-                signed_order = client.create_order(order_args)
                 try:
-                    resp = client.post_order(signed_order)
-                    print(resp)
+                    # resp = client.post_order(
+                    #     signed_order, OrderType.GTC, post_only=True
+                    # )
+                    # print(resp)
                     bet_up.set()
+
+                    buy_price = price
                     print("placing order from thread", price, side)
                     placed_order.set()
-                    while not order_queue.empty():
-                        order_queue.get()
 
                 except Exception as e:
-                    print(e)
+                    print("excepion 5", e)
 
             if side == "DOWN":
-                buy_price = price
-                time.sleep(2)
-                order_args = OrderArgs(
-                    price=price,
-                    size=1,
-                    side=BUY,
-                    token_id=asset_id,
+                signed_order = client.create_order(
+                    OrderArgs(
+                        token_id=asset_id,
+                        price=price,
+                        size=2,
+                        side=BUY,
+                    ),
+                    # options={
+                    #     "tick_size": "0.01",
+                    #     "neg_risk": False,
+                    # },
                 )
-                signed_order = client.create_order(order_args)
-
+                # print(signed_order)
                 try:
-                    resp = client.post_order(signed_order)
-                    print(resp)
-                    bet_up.set()
+                    # resp = client.post_order(
+                    #     signed_order, OrderType.GTC, post_only=True
+                    # )
+                    # print(resp)
+                    bet_down.set()
+
+                    buy_price = price
+
                     print("placing order from thread", price, side)
                     placed_order.set()
-                    while not order_queue.empty():
-                        order_queue.get()
 
                 except Exception as e:
-                    print(e)
+                    print("excepion 5", e)
+            time.sleep(0.2)
 
 
 # ─── BOT ─────────────────────────────────────────────────────────────────────
@@ -230,11 +247,16 @@ def bot():
                             #     "up goes above 80 placing order for up.. 1 ---->",
                             #     major_side,
                             # )
-                            if not placed_order.is_set():
-                                order_queue.put(
-                                    {"id": id_one, "price": major_side, "side": "UP"}
-                                )
-                            e
+                            with signal_lock:
+                                if not placed_order.is_set():
+                                    order_queue.put(
+                                        {
+                                            "id": id_one,
+                                            "price": major_side,
+                                            "side": "UP",
+                                        }
+                                    )
+
                     else:
                         if not bet_down.is_set() and not bet_up.is_set():
                             major_side = best_ask_one
@@ -244,11 +266,15 @@ def bot():
                             #     "down goes above 80 placing order for down.. 2---->",
                             #     major_side,
                             # )
-                            if not placed_order.is_set():
-
-                                order_queue.put(
-                                    {"id": id_two, "price": major_side, "side": "DOWN"}
-                                )
+                            with signal_lock:
+                                if not placed_order.is_set():
+                                    order_queue.put(
+                                        {
+                                            "id": id_two,
+                                            "price": major_side,
+                                            "side": "DOWN",
+                                        }
+                                    )
                             # bet_for_down = True
 
                 if 0.95 <= best_ask_two <= 0.98:
@@ -261,10 +287,15 @@ def bot():
                             #     "up goes above 80 placing order for up.. 3 ----->",
                             #     major_side,
                             # )
-                            if not placed_order.is_set():
-                                order_queue.put(
-                                    {"id": id_two, "price": major_side, "side": "UP"}
-                                )
+                            with signal_lock:
+                                if not placed_order.is_set():
+                                    order_queue.put(
+                                        {
+                                            "id": id_two,
+                                            "price": major_side,
+                                            "side": "UP",
+                                        }
+                                    )
 
                     else:
                         if not bet_down.is_set() and not bet_up.is_set():
@@ -274,10 +305,15 @@ def bot():
                             #     "down goes above 80 placing order for down... 4---->",
                             #     major_side,
                             # )
-                            if not placed_order.is_set():
-                                order_queue.put(
-                                    {"id": id_one, "price": major_side, "side": "DOWN"}
-                                )
+                            with signal_lock:
+                                if not placed_order.is_set():
+                                    order_queue.put(
+                                        {
+                                            "id": id_one,
+                                            "price": major_side,
+                                            "side": "DOWN",
+                                        }
+                                    )
                             # bet_for_down = True
 
             except Exception as e:
@@ -338,11 +374,21 @@ def bot():
         print("-" * 60)
         bet_up.clear()
         bet_down.clear()
+
         buy_price = 0.0
-        while not order_queue.empty():
-            order_queue.get()
+        time1 = time.time()
+        print("size of queue", order_queue.qsize())
+        while True:
+            try:
+                order_queue.get_nowait()
+            except queue.Empty:
+                break
+        time2 = time.time()
+        print("time required to clear queue", time2 - time1)
+
         print("Stack cleared", order_queue.empty())
-        placed_order.clear()
+        with signal_lock:
+            placed_order.clear()
         time.sleep(5)
         print("switched new slug")
         initial_slug = new_slug  # advance only after intentional close
@@ -351,7 +397,7 @@ def bot():
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    initial_slug = "btc-updown-5m-1773391200"
+    initial_slug = "btc-updown-5m-1773426900"
     buy_price = 0.0
     threading.Thread(target=order_worker, daemon=True).start()
     print("PID:", os.getpid())
