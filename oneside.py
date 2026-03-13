@@ -374,7 +374,7 @@ def bot():
 
         try:
             ws.run_forever(
-                ping_interval=20, ping_timeout=10, ping_payload="PING", reconnect=3
+                ping_interval=12, ping_timeout=10, ping_payload="PING", reconnect=3
             )
         except Exception as e:
             print("excepion3 =", e)
