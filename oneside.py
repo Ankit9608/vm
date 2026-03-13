@@ -12,6 +12,24 @@ import queue
 import math
 import os
 
+from py_clob_client.client import ClobClient
+from py_clob_client.clob_types import ApiCreds, OrderArgs
+from dotenv import load_dotenv
+from py_clob_client.constants import AMOY
+
+from py_clob_client.order_builder.constants import BUY
+
+load_dotenv()
+host = os.getenv("CLOB_API_URL", "https://clob.polymarket.com")
+key = os.getenv("PRIVATE_KEY")
+creds = ApiCreds(
+    api_key=os.getenv("CLOB_API_KEY"),
+    api_secret=os.getenv("CLOB_SECRET"),
+    api_passphrase=os.getenv("CLOB_PASS_PHRASE"),
+)
+chain_id = int(os.getenv("CHAIN_ID", AMOY))
+client = ClobClient(host, key=key, chain_id=chain_id, creds=creds)
+
 
 order_queue = queue.LifoQueue()
 
@@ -66,20 +84,47 @@ def order_worker():
             if side == "UP":
                 buy_price = price
                 time.sleep(2)
-                bet_up.set()
-                print("placing order from thread", price, side)
-                placed_order.set()
-                while not order_queue.empty():
-                    order_queue.get()
+                order_args = OrderArgs(
+                    price=price,
+                    size=1,
+                    side=BUY,
+                    token_id=asset_id,
+                )
+                signed_order = client.create_order(order_args)
+                try:
+                    resp = client.post_order(signed_order)
+                    print(resp)
+                    bet_up.set()
+                    print("placing order from thread", price, side)
+                    placed_order.set()
+                    while not order_queue.empty():
+                        order_queue.get()
+
+                except Exception as e:
+                    print(e)
 
             if side == "DOWN":
                 buy_price = price
                 time.sleep(2)
-                bet_down.set()
-                print("placing order from thread", price, side)
-                placed_order.set()
-                while not order_queue.empty():
-                    order_queue.get()
+                order_args = OrderArgs(
+                    price=price,
+                    size=1,
+                    side=BUY,
+                    token_id=asset_id,
+                )
+                signed_order = client.create_order(order_args)
+
+                try:
+                    resp = client.post_order(signed_order)
+                    print(resp)
+                    bet_up.set()
+                    print("placing order from thread", price, side)
+                    placed_order.set()
+                    while not order_queue.empty():
+                        order_queue.get()
+
+                except Exception as e:
+                    print(e)
 
 
 # ─── BOT ─────────────────────────────────────────────────────────────────────
@@ -89,7 +134,6 @@ def bot():
     global initial_slug, buy_price
 
     while True:
-        ping_stop = threading.Event()
         print("started for", initial_slug)
 
         # ── slug calculation ──────────────────────────────────────────────
@@ -146,16 +190,16 @@ def bot():
             time.sleep(1)
 
         def on_reconnect(ws):
-            subscribe(ws)
-            time.sleep(1)
             print("Reconnected")
+            time.sleep(1)
+            subscribe(ws)
 
         def on_pong(ws, message):
             pass
             # print("Pong recieved =", message)
 
         def on_message(ws, message):
-            global bet_for_up, bet_for_down
+
             ws_data = json.loads(message)
             try:
                 event_type = ws_data.get("event_type")
@@ -190,7 +234,7 @@ def bot():
                                 order_queue.put(
                                     {"id": id_one, "price": major_side, "side": "UP"}
                                 )
-                            # bet_for_up = True
+                            e
                     else:
                         if not bet_down.is_set() and not bet_up.is_set():
                             major_side = best_ask_one
@@ -221,7 +265,7 @@ def bot():
                                 order_queue.put(
                                     {"id": id_two, "price": major_side, "side": "UP"}
                                 )
-                            # bet_for_up = True
+
                     else:
                         if not bet_down.is_set() and not bet_up.is_set():
                             major_side = best_ask_two
@@ -277,7 +321,6 @@ def bot():
         except Exception as e:
             print("excepion3 =", e)
         finally:
-            ping_stop.set()
             if ws.sock:
                 ws.sock.close()
 
@@ -308,7 +351,7 @@ def bot():
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    initial_slug = "btc-updown-5m-1773336000"
+    initial_slug = "btc-updown-5m-1773391200"
     buy_price = 0.0
     threading.Thread(target=order_worker, daemon=True).start()
     print("PID:", os.getpid())
