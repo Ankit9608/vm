@@ -13,7 +13,7 @@ import math
 import os
 
 
-order_queue = queue.Queue()
+order_queue = queue.LifoQueue()
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -298,7 +298,7 @@ def bot():
         buy_price = 0.0
         while not order_queue.empty():
             order_queue.get()
-        print("Queue cleared", order_queue.empty())
+        print("Stack cleared", order_queue.empty())
         placed_order.clear()
         time.sleep(5)
         print("switched new slug")
