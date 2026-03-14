@@ -133,7 +133,7 @@ def order_worker():
 
                     buy_price = price
                     print("placing order from thread", price, side)
-                    placed_order.set()
+                    # placed_order.set()
 
                 except Exception as e:
                     print("excepion 5", e)
@@ -162,7 +162,7 @@ def order_worker():
                     buy_price = price
 
                     print("placing order from thread", price, side)
-                    placed_order.set()
+                    # placed_order.set()
 
                 except Exception as e:
                     print("excepion 5", e)
@@ -376,9 +376,7 @@ def bot():
         )
 
         try:
-            ws.run_forever(
-                ping_interval=12, ping_timeout=10, ping_payload="PING", reconnect=3
-            )
+            ws.run_forever(ping_interval=10, ping_payload="PING", reconnect=3)
         except Exception as e:
             print("excepion3 =", e)
         finally:
@@ -422,7 +420,7 @@ def bot():
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    initial_slug = "btc-updown-5m-1773478500"
+    initial_slug = "btc-updown-5m-1773488100"
     buy_price = 0.0
     threading.Thread(target=order_worker, daemon=True).start()
     print("PID:", os.getpid())
