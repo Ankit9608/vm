@@ -295,7 +295,7 @@ def bot():
                                 if not placed_order.is_set():
                                     order_queue.put(
                                         {
-                                            "id": id_two,
+                                            "id": id_one,
                                             "price": major_side,
                                             "side": "DOWN",
                                         }
@@ -334,7 +334,7 @@ def bot():
                                 if not placed_order.is_set():
                                     order_queue.put(
                                         {
-                                            "id": id_one,
+                                            "id": id_two,
                                             "price": major_side,
                                             "side": "DOWN",
                                         }
