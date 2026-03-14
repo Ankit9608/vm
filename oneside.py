@@ -22,15 +22,18 @@ from py_clob_client.order_builder.constants import BUY
 from datetime import datetime
 import sys
 
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
+
 
 class Tee:
     def __init__(self, filename):
-        self.file = open(filename, "a", buffering=1)
+        self.file = open(filename, "a", encoding="utf-8", buffering=1)
         self.stdout = sys.stdout
 
     def write(self, message):
-        if message.strip():
-            message = f"[{datetime.now()}] {message}"
+        # if message.strip():
+        #     message = f"[{datetime.now()}] {message}"
         self.stdout.write(message)
         self.file.write(message)
 
@@ -109,18 +112,18 @@ def order_worker():
             print(asset_id, price, side)
 
             if side == "UP":
-                signed_order = client.create_order(
-                    OrderArgs(
-                        price=price,
-                        size=2,
-                        side=BUY,
-                        token_id=asset_id,
-                    ),
-                    # options={
-                    #     "tick_size": "0.01",
-                    #     "neg_risk": False,
-                    # },
-                )
+                # signed_order = client.create_order(
+                #     OrderArgs(
+                #         price=price,
+                #         size=2,
+                #         side=BUY,
+                #         token_id=asset_id,
+                #     ),
+                #     # options={
+                #     #     "tick_size": "0.01",
+                #     #     "neg_risk": False,
+                #     # },
+                # )
                 try:
                     # resp = client.post_order(
                     #     signed_order, OrderType.GTC, post_only=True
@@ -136,18 +139,18 @@ def order_worker():
                     print("excepion 5", e)
 
             if side == "DOWN":
-                signed_order = client.create_order(
-                    OrderArgs(
-                        token_id=asset_id,
-                        price=price,
-                        size=2,
-                        side=BUY,
-                    ),
-                    # options={
-                    #     "tick_size": "0.01",
-                    #     "neg_risk": False,
-                    # },
-                )
+                # signed_order = client.create_order(
+                #     OrderArgs(
+                #         token_id=asset_id,
+                #         price=price,
+                #         size=2,
+                #         side=BUY,
+                #     ),
+                #     # options={
+                #     #     "tick_size": "0.01",
+                #     #     "neg_risk": False,
+                #     # },
+                # )
                 # print(signed_order)
                 try:
                     # resp = client.post_order(
@@ -419,7 +422,7 @@ def bot():
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    initial_slug = "btc-updown-5m-1773426900"
+    initial_slug = "btc-updown-5m-1773478500"
     buy_price = 0.0
     threading.Thread(target=order_worker, daemon=True).start()
     print("PID:", os.getpid())
