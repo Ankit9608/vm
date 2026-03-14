@@ -12,7 +12,6 @@ from py_clob_client.clob_types import (
 from dotenv import load_dotenv
 from py_clob_client.constants import AMOY
 from py_clob_client.order_builder.constants import BUY
-from web3 import Web3
 import time
 
 # from py_clob_client.clob_types import AllowanceParams
