@@ -124,14 +124,14 @@ def order_worker():
             print(asset_id, price, side)
 
             if side == "UP":
-                signed_order = client.create_market_order(
-                    token_id=asset_id,
-                    side=BUY,
-                    amount=amount,
-                    price=price,
+
+                order_args1 = OrderArgs(
+                    token_id=asset_id, side=BUY, amount=amount, price=price
                 )
+                signed_order1 = client.create_market_order(order_args1)
+
                 try:
-                    resp = client.post_order(signed_order, OrderType.FOK)
+                    resp = client.post_order(signed_order1, OrderType.FOK)
                     print(resp)
                     if resp.get("success") == True:
                         placed_order.set()
@@ -145,14 +145,12 @@ def order_worker():
                     continue
 
             if side == "DOWN":
-                signed_order = client.create_market_order(
-                    token_id=asset_id,
-                    price=price,
-                    amount=amount,
-                    side=BUY,
+                order_args2 = OrderArgs(
+                    token_id=asset_id, side=BUY, amount=amount, price=price
                 )
+                signed_order2 = client.create_market_order(order_args2)
                 try:
-                    resp = client.post_order(signed_order, OrderType.FOK)
+                    resp = client.post_order(signed_order2, OrderType.FOK)
                     print(resp)
                     if resp.get("success") == True:
                         placed_order.set()
