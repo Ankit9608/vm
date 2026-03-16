@@ -123,48 +123,48 @@ def order_worker():
             print("price", price)
             print(asset_id, price, side)
 
-            # if side == "UP":
-            #     signed_order = client.create_market_order(
-            #         token_id=asset_id,
-            #         side=BUY,
-            #         size=2,
-            #         price=price,
-            #     )
-            #     try:
-            #         resp = client.post_order(signed_order, OrderType.FOK)
-            #         print(resp)
-            #         if resp.get("success") == True:
-            #             bet_up.set()
+            if side == "UP":
+                signed_order = client.create_market_order(
+                    token_id=asset_id,
+                    side=BUY,
+                    amount=amount,
+                    price=price,
+                )
+                try:
+                    resp = client.post_order(signed_order, OrderType.FOK)
+                    print(resp)
+                    if resp.get("success") == True:
+                        placed_order.set()
+                        bet_up.set()
 
-            #             buy_price = price
-            #             print("placing order from thread", price, side)
-            #             placed_order.set()
+                        buy_price = price
+                        print("placed order from thread", price, side)
 
-            #     except Exception as e:
-            #         print("excepion 5", e)
-            #         continue
+                except Exception as e:
+                    print("excepion 5", e)
+                    continue
 
-            # if side == "DOWN":
-            #     signed_order = client.create_market_order(
-            #         token_id=asset_id,
-            #         price=price,
-            #         size=2,
-            #         side=BUY,
-            #     )
-            #     try:
-            #         resp = client.post_order(signed_order, OrderType.FOK)
-            #         print(resp)
-            #         if resp.get("success") == True:
-            #             bet_down.set()
+            if side == "DOWN":
+                signed_order = client.create_market_order(
+                    token_id=asset_id,
+                    price=price,
+                    amount=amount,
+                    side=BUY,
+                )
+                try:
+                    resp = client.post_order(signed_order, OrderType.FOK)
+                    print(resp)
+                    if resp.get("success") == True:
+                        placed_order.set()
+                        bet_down.set()
 
-            #             buy_price = price
+                        buy_price = price
 
-            #             print("placed order from thread", price, side)
-            #             placed_order.set()
+                        print("placed order from thread", price, side)
 
-            #     except Exception as e:
-            #         print("excepion 5", e)
-            #         continue
+                except Exception as e:
+                    print("excepion 5", e)
+                    continue
             time.sleep(0.2)
 
 
