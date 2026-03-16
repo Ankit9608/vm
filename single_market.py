@@ -13,7 +13,7 @@ import os
 import argparse
 
 from py_clob_client.client import ClobClient
-from py_clob_client.clob_types import ApiCreds, OrderArgs, OrderType
+from py_clob_client.clob_types import ApiCreds, OrderArgs, OrderType, MarketOrderArgs
 from dotenv import load_dotenv
 from py_clob_client.constants import AMOY
 
@@ -125,7 +125,7 @@ def order_worker():
 
             if side == "UP":
 
-                order_args1 = OrderArgs(
+                order_args1 = MarketOrderArgs(
                     token_id=asset_id, side=BUY, amount=amount, price=price
                 )
                 signed_order1 = client.create_market_order(order_args1)
@@ -145,7 +145,7 @@ def order_worker():
                     continue
 
             if side == "DOWN":
-                order_args2 = OrderArgs(
+                order_args2 = MarketOrderArgs(
                     token_id=asset_id, side=BUY, amount=amount, price=price
                 )
                 signed_order2 = client.create_market_order(order_args2)
