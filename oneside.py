@@ -44,16 +44,16 @@ class Tee:
 
 sys.stdout = Tee("bot_log.txt")
 
-load_dotenv()
-host = os.getenv("CLOB_API_URL", "https://clob.polymarket.com")
-key = os.getenv("PRIVATE_KEY")
-creds = ApiCreds(
-    api_key=os.getenv("CLOB_API_KEY"),
-    api_secret=os.getenv("CLOB_SECRET"),
-    api_passphrase=os.getenv("CLOB_PASS_PHRASE"),
-)
-chain_id = int(os.getenv("CHAIN_ID", AMOY))
-client = ClobClient(host, key=key, chain_id=chain_id, creds=creds)
+# load_dotenv()
+# host = os.getenv("CLOB_API_URL", "https://clob.polymarket.com")
+# key = os.getenv("PRIVATE_KEY")
+# creds = ApiCreds(
+# api_key=os.getenv("CLOB_API_KEY"),
+# api_secret=os.getenv("CLOB_SECRET"),
+# api_passphrase=os.getenv("CLOB_PASS_PHRASE"),
+# )
+# chain_id = int(os.getenv("CHAIN_ID", AMOY))
+# client = ClobClient(host, key=key, chain_id=chain_id, creds=creds)
 
 
 order_queue = queue.LifoQueue()
@@ -109,7 +109,7 @@ def order_worker():
             price = math.floor(price * 100) / 100
             side = item.get("side")
 
-            print(asset_id, price, side)
+            # print(asset_id, price, side)
 
             if side == "UP":
                 # signed_order = client.create_order(
@@ -129,11 +129,12 @@ def order_worker():
                     #     signed_order, OrderType.GTC, post_only=True
                     # )
                     # print(resp)
+                    print("placed order", asset_id, price, side)
                     bet_up.set()
 
                     buy_price = price
-                    print("placing order from thread", price, side)
-                    # placed_order.set()
+                    # print("placing order from thread", price, side)
+                    placed_order.set()
 
                 except Exception as e:
                     print("excepion 5", e)
@@ -157,12 +158,14 @@ def order_worker():
                     #     signed_order, OrderType.GTC, post_only=True
                     # )
                     # print(resp)
+                    print("placed order", asset_id, price, side)
+
                     bet_down.set()
 
                     buy_price = price
 
-                    print("placing order from thread", price, side)
-                    # placed_order.set()
+                    # print("placing order from thread", price, side)
+                    placed_order.set()
 
                 except Exception as e:
                     print("excepion 5", e)
@@ -263,7 +266,7 @@ def bot():
                 best_ask_two = float(price_changes[1].get("best_ask"))
 
                 # major side 0.80–0.85
-                if 0.95 <= best_ask_one <= 0.98:
+                if best_ask_one == 0.98:
                     if id_one == up_id:
                         if not bet_up.is_set() and not bet_down.is_set():
                             major_side = best_ask_one
@@ -302,7 +305,7 @@ def bot():
                                     )
                             # bet_for_down = True
 
-                if 0.95 <= best_ask_two <= 0.98:
+                if best_ask_two == 0.98:
                     if id_two == up_id:
                         if not bet_up.is_set() and not bet_down.is_set():
                             major_side = best_ask_two
@@ -420,7 +423,7 @@ def bot():
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    initial_slug = "btc-updown-5m-1773561600"
+    initial_slug = "btc-updown-5m-1773735300"
     buy_price = 0.0
     threading.Thread(target=order_worker, daemon=True).start()
     print("PID:", os.getpid())
