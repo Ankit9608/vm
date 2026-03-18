@@ -450,7 +450,7 @@ def bot():
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    initial_slug = "btc-updown-5m-1773735300"
+    initial_slug = "btc-updown-5m-1773856800"
     buy_price = 0.0
     target_time = None
     threading.Thread(target=order_worker, daemon=True).start()
