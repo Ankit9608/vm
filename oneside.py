@@ -129,7 +129,14 @@ def order_worker():
                     #     signed_order, OrderType.GTC, post_only=True
                     # )
                     # print(resp)
-                    print("placed order", asset_id, price, side)
+                    print(
+                        "placed order",
+                        asset_id,
+                        price,
+                        side,
+                        "| time left:",
+                        get_time_left(),
+                    )
                     bet_up.set()
 
                     buy_price = price
@@ -158,7 +165,14 @@ def order_worker():
                     #     signed_order, OrderType.GTC, post_only=True
                     # )
                     # print(resp)
-                    print("placed order", asset_id, price, side)
+                    print(
+                        "placed order",
+                        asset_id,
+                        price,
+                        side,
+                        "| time left:",
+                        get_time_left(),
+                    )
 
                     bet_down.set()
 
@@ -173,6 +187,18 @@ def order_worker():
 
 
 # ─── BOT ─────────────────────────────────────────────────────────────────────
+def get_time_left():
+    global target_time
+    if not target_time:
+        return "N/A"
+    now = datetime.now(timezone.utc)
+    diff = target_time - now
+    seconds = int(diff.total_seconds())
+    if seconds < 0:
+        return "Ended"
+    mins = seconds // 60
+    secs = seconds % 60
+    return f"{mins}m {secs}s"
 
 
 def bot():
@@ -206,6 +232,7 @@ def bot():
         # print(TARGET_ASSETS)
 
         endtime = response.get("endDate")
+        global target_time
         target_time = datetime.fromisoformat(endtime.replace("Z", "+00:00"))
         # FIX: skip already-expired markets immediately, don't bother connecting
         if datetime.now(timezone.utc) >= target_time:
@@ -425,6 +452,7 @@ def bot():
 if __name__ == "__main__":
     initial_slug = "btc-updown-5m-1773735300"
     buy_price = 0.0
+    target_time = None
     threading.Thread(target=order_worker, daemon=True).start()
     print("PID:", os.getpid())
     try:
