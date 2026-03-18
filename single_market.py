@@ -138,7 +138,14 @@ def order_worker():
                         bet_up.set()
 
                         buy_price = price
-                        print("placed order from thread", price, side)
+                        print(
+                            "placed order",
+                            asset_id,
+                            price,
+                            side,
+                            "| time left:",
+                            get_time_left(),
+                        )
 
                 except Exception as e:
                     print("excepion 5", e)
@@ -158,12 +165,33 @@ def order_worker():
 
                         buy_price = price
 
-                        print("placed order from thread", price, side)
+                        print(
+                            "placed order",
+                            asset_id,
+                            price,
+                            side,
+                            "| time left:",
+                            get_time_left(),
+                        )
 
                 except Exception as e:
                     print("excepion 5", e)
                     continue
             time.sleep(0.2)
+
+
+def get_time_left():
+    global target_time
+    if not target_time:
+        return "N/A"
+    now = datetime.now(timezone.utc)
+    diff = target_time - now
+    seconds = int(diff.total_seconds())
+    if seconds < 0:
+        return "Ended"
+    mins = seconds // 60
+    secs = seconds % 60
+    return f"{mins}m {secs}s"
 
 
 def bot():
@@ -183,6 +211,7 @@ def bot():
     # print(TARGET_ASSETS)
 
     endtime = response.get("endDate")
+    global target_time
     target_time = datetime.fromisoformat(endtime.replace("Z", "+00:00"))
     if datetime.now(timezone.utc) >= target_time:
         print(f"⏩ Market {initial_slug} already expired, skipping...")
@@ -385,6 +414,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     initial_slug = args.slug
+    target_time = None
 
     buy_price = 0.0
     threading.Thread(target=order_worker, daemon=True).start()
