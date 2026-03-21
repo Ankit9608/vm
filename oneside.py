@@ -52,8 +52,18 @@ creds = ApiCreds(
     api_secret=os.getenv("CLOB_SECRET"),
     api_passphrase=os.getenv("CLOB_PASS_PHRASE"),
 )
+signature_type = 2
+funder = os.getenv("FUNDER_ADDRESS")
+
 chain_id = int(os.getenv("CHAIN_ID", AMOY))
-client = ClobClient(host, key=key, chain_id=chain_id, creds=creds)
+client = ClobClient(
+    host,
+    key=key,
+    chain_id=chain_id,
+    creds=creds,
+    signature_type=signature_type,
+    funder=funder,
+)
 
 
 order_queue = queue.LifoQueue()
