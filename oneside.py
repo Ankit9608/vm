@@ -129,13 +129,14 @@ def order_worker():
                     #     signed_order, OrderType.GTC, post_only=True
                     # )
                     # print(resp)
+                    min, sec = get_time_left()
                     print(
                         "placed order",
                         asset_id,
                         price,
                         side,
                         "| time left:",
-                        get_time_left(),
+                        f"{min}m {sec}s",
                     )
                     bet_up.set()
 
@@ -165,13 +166,14 @@ def order_worker():
                     #     signed_order, OrderType.GTC, post_only=True
                     # )
                     # print(resp)
+                    min, sec = get_time_left()
                     print(
                         "placed order",
                         asset_id,
                         price,
                         side,
                         "| time left:",
-                        get_time_left(),
+                        f"{min}m {sec}s",
                     )
 
                     bet_down.set()
@@ -198,7 +200,8 @@ def get_time_left():
         return "Ended"
     mins = seconds // 60
     secs = seconds % 60
-    return f"{mins}m {secs}s"
+    # return f"{mins}m {secs}s"
+    return mins, secs
 
 
 def bot():
@@ -271,7 +274,9 @@ def bot():
             # print("Pong recieved =", message)
 
         def on_message(ws, message):
-
+            min, sec = get_time_left()
+            if min > 0 or sec > 15:
+                return
             ws_data = json.loads(message)
             try:
                 event_type = ws_data.get("event_type")
@@ -450,7 +455,7 @@ def bot():
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    initial_slug = "btc-updown-5m-1773856800"
+    initial_slug = "btc-updown-5m-1774082700"
     buy_price = 0.0
     target_time = None
     threading.Thread(target=order_worker, daemon=True).start()
