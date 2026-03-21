@@ -13,7 +13,7 @@ import math
 import os
 
 from py_clob_client.client import ClobClient
-from py_clob_client.clob_types import ApiCreds, OrderArgs, OrderType
+from py_clob_client.clob_types import ApiCreds, OrderArgs, OrderType, MarketOrderArgs
 from dotenv import load_dotenv
 from py_clob_client.constants import AMOY
 
@@ -44,16 +44,16 @@ class Tee:
 
 sys.stdout = Tee("bot_log.txt")
 
-# load_dotenv()
-# host = os.getenv("CLOB_API_URL", "https://clob.polymarket.com")
-# key = os.getenv("PRIVATE_KEY")
-# creds = ApiCreds(
-# api_key=os.getenv("CLOB_API_KEY"),
-# api_secret=os.getenv("CLOB_SECRET"),
-# api_passphrase=os.getenv("CLOB_PASS_PHRASE"),
-# )
-# chain_id = int(os.getenv("CHAIN_ID", AMOY))
-# client = ClobClient(host, key=key, chain_id=chain_id, creds=creds)
+load_dotenv()
+host = os.getenv("CLOB_API_URL", "https://clob.polymarket.com")
+key = os.getenv("PRIVATE_KEY")
+creds = ApiCreds(
+    api_key=os.getenv("CLOB_API_KEY"),
+    api_secret=os.getenv("CLOB_SECRET"),
+    api_passphrase=os.getenv("CLOB_PASS_PHRASE"),
+)
+chain_id = int(os.getenv("CHAIN_ID", AMOY))
+client = ClobClient(host, key=key, chain_id=chain_id, creds=creds)
 
 
 order_queue = queue.LifoQueue()
@@ -108,81 +108,58 @@ def order_worker():
             price = item.get("price")
             price = math.floor(price * 100) / 100
             side = item.get("side")
-
+            amount = price * 2
+            amount = math.floor(amount * 100) / 100
             # print(asset_id, price, side)
 
             if side == "UP":
-                # signed_order = client.create_order(
-                #     OrderArgs(
-                #         price=price,
-                #         size=2,
-                #         side=BUY,
-                #         token_id=asset_id,
-                #     ),
-                #     # options={
-                #     #     "tick_size": "0.01",
-                #     #     "neg_risk": False,
-                #     # },
-                # )
+                order_args1 = MarketOrderArgs(
+                    token_id=asset_id, side=BUY, amount=amount, price=price
+                )
+                signed_order1 = client.create_market_order(order_args1)
                 try:
-                    # resp = client.post_order(
-                    #     signed_order, OrderType.GTC, post_only=True
-                    # )
-                    # print(resp)
-                    min, sec = get_time_left()
-                    print(
-                        "placed order",
-                        asset_id,
-                        price,
-                        side,
-                        "| time left:",
-                        f"{min}m {sec}s",
-                    )
-                    bet_up.set()
+                    resp = client.post_order(signed_order1, OrderType.FOK)
 
-                    buy_price = price
-                    # print("placing order from thread", price, side)
-                    placed_order.set()
+                    if resp.get("success") == True:
+                        print(resp)
+                        buy_price = price
+                        placed_order.set()
+                        bet_up.set()
+
+                        min, sec = get_time_left()
+                        print(
+                            "placed order",
+                            asset_id,
+                            price,
+                            side,
+                            "| time left:",
+                            f"{min}m {sec}s",
+                        )
 
                 except Exception as e:
                     print("excepion 5", e)
 
             if side == "DOWN":
-                # signed_order = client.create_order(
-                #     OrderArgs(
-                #         token_id=asset_id,
-                #         price=price,
-                #         size=2,
-                #         side=BUY,
-                #     ),
-                #     # options={
-                #     #     "tick_size": "0.01",
-                #     #     "neg_risk": False,
-                #     # },
-                # )
-                # print(signed_order)
+                order_args2 = MarketOrderArgs(
+                    token_id=asset_id, side=BUY, amount=amount, price=price
+                )
+                signed_order2 = client.create_market_order(order_args2)
                 try:
-                    # resp = client.post_order(
-                    #     signed_order, OrderType.GTC, post_only=True
-                    # )
-                    # print(resp)
-                    min, sec = get_time_left()
-                    print(
-                        "placed order",
-                        asset_id,
-                        price,
-                        side,
-                        "| time left:",
-                        f"{min}m {sec}s",
-                    )
-
-                    bet_down.set()
-
-                    buy_price = price
-
-                    # print("placing order from thread", price, side)
-                    placed_order.set()
-
+                    resp = client.post_order(signed_order2, OrderType.FOK)
+                    if resp.get("success") == True:
+                        print(resp)
+                        placed_order.set()
+                        bet_down.set()
+                        buy_price = price
+                        min, sec = get_time_left()
+                        print(
+                            "placed order",
+                            asset_id,
+                            price,
+                            side,
+                            "| time left:",
+                            f"{min}m {sec}s",
+                        )
                 except Exception as e:
                     print("excepion 5", e)
             time.sleep(0.2)
@@ -192,12 +169,12 @@ def order_worker():
 def get_time_left():
     global target_time
     if not target_time:
-        return "N/A"
+        return -1, -1
     now = datetime.now(timezone.utc)
     diff = target_time - now
     seconds = int(diff.total_seconds())
     if seconds < 0:
-        return "Ended"
+        return 0, 0
     mins = seconds // 60
     secs = seconds % 60
     # return f"{mins}m {secs}s"
