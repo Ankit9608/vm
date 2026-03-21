@@ -22,6 +22,12 @@ from py_clob_client.order_builder.constants import BUY
 
 from datetime import datetime
 import sys
+from web3 import Web3
+from py_builder_relayer_client.client import RelayClient
+from py_builder_relayer_client.models import OperationType, SafeTransaction
+from py_builder_signing_sdk.config import BuilderConfig
+from py_builder_signing_sdk.sdk_types import BuilderApiKeyCreds
+
 
 sys.stdout.reconfigure(encoding="utf-8")
 sys.stderr.reconfigure(encoding="utf-8")
@@ -66,8 +72,24 @@ client = ClobClient(
     funder=funder,
 )
 
+# ----------------------------setup for redeem
+builder_config = BuilderConfig(
+    local_builder_creds=BuilderApiKeyCreds(
+        key=os.getenv("POLY_BUILDER_API_KEY"),
+        secret=os.getenv("POLY_BUILDER_SECRET"),
+        passphrase=os.getenv("POLY_BUILDER_PASSPHRASE"),
+    )
+)
+
+client2 = RelayClient("https://relayer-v2.polymarket.com", 137, key, builder_config)
+CTF = "0x4D97DCd97eC945f40cF65F87097ACe5EA0476045"
+parent_collection_id = b"\x00" * 32
+collateral_token = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
+index_sets = [1, 2]
+
 
 order_queue = queue.LifoQueue()
+redeem_queue = queue.Queue()
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -192,7 +214,7 @@ def get_time_left():
 
 
 def bot():
-    global initial_slug, buy_price
+    global initial_slug, buy_price, to_redeem
 
     while True:
         print("started for", initial_slug)
@@ -216,6 +238,7 @@ def bot():
             continue
 
         ids = response.get("clobTokenIds").split(",")
+        condition_id = response.get("conditionId")
         up_id = ids[0][2:-1]
         down_id = ids[1][2:-2]
         TARGET_ASSETS = [up_id, down_id]
@@ -412,6 +435,8 @@ def bot():
             print(
                 f"   Major: {buy_price:.3f}           Side:{'UP' if bet_up.is_set() else 'DOWN' if bet_down.is_set() else None}"
             )
+            to_redeem += 1
+            redeem_queue.put(condition_id)
 
         elif not bet_down.is_set() and not bet_up.is_set():
             print("✅✅✅ TRADE SKIPPED! No loss for this market!")
@@ -435,6 +460,46 @@ def bot():
         with signal_lock:
             placed_order.clear()
         time.sleep(5)
+
+        if to_redeem % 4 == 0:
+            condition_id = redeem_queue.get()
+            redeem_tx = SafeTransaction(
+                to=CTF,
+                operation=OperationType.Call,
+                data=Web3()
+                .eth.contract(
+                    address=CTF,
+                    abi=[
+                        {
+                            "name": "redeemPositions",
+                            "type": "function",
+                            "inputs": [
+                                {"name": "collateralToken", "type": "address"},
+                                {"name": "parentCollectionId", "type": "bytes32"},
+                                {"name": "conditionId", "type": "bytes32"},
+                                {"name": "indexSets", "type": "uint256[]"},
+                            ],
+                            "outputs": [],
+                        }
+                    ],
+                )
+                .encode_abi(
+                    abi_element_identifier="redeemPositions",
+                    args=[
+                        collateral_token,
+                        parent_collection_id,
+                        condition_id,
+                        index_sets,
+                    ],
+                ),
+                value="0",
+            )
+
+            response = client2.execute([redeem_tx], "Redeem positions")
+            response.wait()
+            print(type(response))
+            print(response)
+
         print("switched new slug")
         initial_slug = new_slug  # advance only after intentional close
 
@@ -453,6 +518,7 @@ if __name__ == "__main__":
     initial_slug = args.slug
     buy_price = 0.0
     target_time = None
+    to_redeem = 0
     threading.Thread(target=order_worker, daemon=True).start()
     print("PID:", os.getpid())
     try:
