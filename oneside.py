@@ -162,7 +162,6 @@ def order_worker():
                         )
                 except Exception as e:
                     print("excepion 5", e)
-            time.sleep(0.2)
 
 
 # ─── BOT ─────────────────────────────────────────────────────────────────────
