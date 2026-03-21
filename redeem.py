@@ -28,7 +28,7 @@ client = RelayClient(
 CTF = "0x4D97DCd97eC945f40cF65F87097ACe5EA0476045"
 parent_collection_id = b"\x00" * 32
 collateral_token = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
-condition_id = "0x498e8f5cf3135bb6c94ea30793f01fbadae005567a7bea47c20f1ce1ff8beb22"
+condition_id = "0x3c63ce0950f2d9e03b4bc28cc6d10f4d301c170309a48d2f055f3b204192bc8c"
 index_sets = [1, 2]
 
 
