@@ -3,6 +3,7 @@ import requests
 import json
 import time
 from datetime import datetime, timezone, timedelta
+import argparse
 
 # import ssl
 import websocket
@@ -441,7 +442,15 @@ def bot():
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    initial_slug = "btc-updown-5m-1774095900"
+    parser = argparse.ArgumentParser(description="pol trading bot")
+    parser.add_argument(
+        "--slug",
+        type=str,
+        required=True,
+        help="market slug to trade, e.g. btc-updown-5m-1773685200",
+    )
+    args = parser.parse_args()
+    initial_slug = args.slug
     buy_price = 0.0
     target_time = None
     threading.Thread(target=order_worker, daemon=True).start()
