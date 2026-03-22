@@ -461,7 +461,7 @@ def bot():
             placed_order.clear()
         time.sleep(5)
 
-        if to_redeem % 4 == 0:
+        if to_redeem % 4 == 0 and to_redeem > 0:
             condition_id = redeem_queue.get()
             redeem_tx = SafeTransaction(
                 to=CTF,
