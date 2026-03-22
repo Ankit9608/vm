@@ -460,7 +460,7 @@ def bot():
         with signal_lock:
             placed_order.clear()
         time.sleep(5)
-
+        print("cleared lock")
         if to_redeem % 4 == 0 and to_redeem > 0:
             condition_id = redeem_queue.get()
             redeem_tx = SafeTransaction(
