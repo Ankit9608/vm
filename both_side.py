@@ -341,7 +341,7 @@ def bot():
                     print(f"placed minor side order for {minor_side} ..{minor_id}")
 
                 if major_taken and not stop_loss_hit:
-                    if id_one == major_id and best_ask_one <= 0.40:
+                    if id_one == major_id and best_ask_one <= 0.50:
                         stop_loss_hit = True
                         stop_loss_time = time.time()
                         print(
@@ -351,7 +351,7 @@ def bot():
                             major_side,
                         )
 
-                    if id_two == major_id and best_ask_two <= 0.40:
+                    if id_two == major_id and best_ask_two <= 0.50:
                         stop_loss_hit = True
                         stop_loss_time = time.time()
                         print(
@@ -434,6 +434,12 @@ def bot():
             else:
                 print("❌ Stop loss hit BEFORE 0.15")
 
+        elif not stop_loss_hit and not minor_filled and major_taken:
+            print(
+                "⚠️ Neither stop loss nor minor fill hit,but major taken market ended?"
+            )
+        elif not major_taken and not minor_filled:
+            print("⚠️ Major side not taken, minor not filled, market ended")
         print("-" * 60)
 
         print("switched new slug")
