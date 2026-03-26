@@ -400,15 +400,15 @@ def bot():
 
                 if minor_order_placed and not minor_filled:
                     # if id_one == minor_id and best_ask_one <= 0.14:
-                    if id_one == minor_id and best_ask_one <= 0.55:
+                    if id_one == minor_id and best_ask_one <= 0.35:
                         minor_filled = True
                         minor_fill_time = time.time()
-                        print("minor filled ..1", minor_id, 0.55, minor_side)
+                        print("minor filled ..1", minor_id, 0.35, minor_side)
 
-                    if id_two == minor_id and best_ask_two <= 0.55:
+                    if id_two == minor_id and best_ask_two <= 0.35:
                         minor_filled = True
                         minor_fill_time = time.time()
-                        print("minor filled ..2", minor_id, 0.55, minor_side)
+                        print("minor filled ..2", minor_id, 0.35, minor_side)
 
             except Exception as e:
                 print(e)
