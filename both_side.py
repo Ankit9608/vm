@@ -318,7 +318,8 @@ def bot():
 
                 # major side 0.80–0.85
                 if not major_taken:
-                    if 0.80 <= best_ask_one <= 0.85:
+                    # if 0.80 <= best_ask_one <= 0.85:
+                    if 0.60 <= best_ask_one:
 
                         major_taken = True
                         major_side = "UP" if id_one == up_id else "DOWN"
@@ -338,7 +339,8 @@ def bot():
                                 major_side,
                             )
 
-                    elif 0.80 <= best_ask_two <= 0.85:
+                    # elif 0.80 <= best_ask_two <= 0.85:
+                    elif 0.60 <= best_ask_two:
                         major_taken = True
                         major_side = "UP" if id_two == up_id else "DOWN"
                         major_id = id_two
@@ -368,7 +370,7 @@ def bot():
                         print(f"placed minor side order for {minor_side} ..{minor_id}")
 
                 if major_taken and not stop_loss_hit:
-                    if id_one == major_id and best_ask_one <= 0.50:
+                    if id_one == major_id and best_ask_one <= 0.40:
                         if not minor_filled:
                             stop_loss_hit = True
                             stop_loss_time = time.time()
@@ -382,7 +384,7 @@ def bot():
                             major_taken = False
                             reverse = True
 
-                    if id_two == major_id and best_ask_two <= 0.50:
+                    if id_two == major_id and best_ask_two <= 0.40:
                         if not minor_filled:
                             stop_loss_hit = True
                             stop_loss_time = time.time()
@@ -397,15 +399,16 @@ def bot():
                             reverse = True
 
                 if minor_order_placed and not minor_filled:
-                    if id_one == minor_id and best_ask_one <= 0.14:
+                    # if id_one == minor_id and best_ask_one <= 0.14:
+                    if id_one == minor_id and best_ask_one <= 0.55:
                         minor_filled = True
                         minor_fill_time = time.time()
-                        print("minor filled ..1", minor_id, 0.15, minor_side)
+                        print("minor filled ..1", minor_id, 0.55, minor_side)
 
-                    if id_two == minor_id and best_ask_two <= 0.14:
+                    if id_two == minor_id and best_ask_two <= 0.55:
                         minor_filled = True
                         minor_fill_time = time.time()
-                        print("minor filled ..2", minor_id, 0.15, minor_side)
+                        print("minor filled ..2", minor_id, 0.55, minor_side)
 
             except Exception as e:
                 print(e)
