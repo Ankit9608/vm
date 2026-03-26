@@ -229,6 +229,7 @@ def bot():
         minor_id = None
         stop_loss_time = None
         minor_fill_time = None
+        reverse = False
         # ── slug calculation ──────────────────────────────────────────────
         str_list = initial_slug.split("-")
         timestamp = str_list[-1]
@@ -294,7 +295,7 @@ def bot():
             # print("Pong recieved =", message)
 
         def on_message(ws, message):
-            nonlocal major_taken, minor_order_placed, stop_loss_hit, minor_filled, major_side, minor_side, major_id, minor_id, stop_loss_time, minor_fill_time
+            nonlocal major_taken, minor_order_placed, stop_loss_hit, minor_filled, major_side, minor_side, major_id, minor_id, stop_loss_time, minor_fill_time, reverse
             ws_data = json.loads(message)
             try:
                 event_type = ws_data.get("event_type")
@@ -318,48 +319,82 @@ def bot():
                 # major side 0.80–0.85
                 if not major_taken:
                     if 0.80 <= best_ask_one <= 0.85:
+
                         major_taken = True
                         major_side = "UP" if id_one == up_id else "DOWN"
                         major_id = id_one
-                        print(
-                            "major side taken ..1", major_id, best_ask_one, major_side
-                        )
+                        if reverse:
+                            print(
+                                "major side taken reversed market ..1",
+                                major_id,
+                                best_ask_one,
+                                major_side,
+                            )
+                        else:
+                            print(
+                                "major side taken ..1",
+                                major_id,
+                                best_ask_one,
+                                major_side,
+                            )
 
                     elif 0.80 <= best_ask_two <= 0.85:
                         major_taken = True
                         major_side = "UP" if id_two == up_id else "DOWN"
                         major_id = id_two
-                        print(
-                            "major side taken ..2", major_id, best_ask_two, major_side
-                        )
+                        if reverse:
+                            print(
+                                "major side taken reversed market ..2",
+                                major_id,
+                                best_ask_two,
+                                major_side,
+                            )
+                        else:
+                            print(
+                                "major side taken ..2",
+                                major_id,
+                                best_ask_two,
+                                major_side,
+                            )
 
                 # Minor side
                 if major_taken and not minor_order_placed:
-                    minor_side = "DOWN" if major_side == "UP" else "UP"
-                    minor_id = down_id if major_side == "UP" else up_id
-                    minor_order_placed = True
-                    print(f"placed minor side order for {minor_side} ..{minor_id}")
+                    if reverse:
+                        pass
+                    else:
+                        minor_side = "DOWN" if major_side == "UP" else "UP"
+                        minor_id = down_id if major_side == "UP" else up_id
+                        minor_order_placed = True
+                        print(f"placed minor side order for {minor_side} ..{minor_id}")
 
                 if major_taken and not stop_loss_hit:
                     if id_one == major_id and best_ask_one <= 0.50:
-                        stop_loss_hit = True
-                        stop_loss_time = time.time()
-                        print(
-                            "stop loss hit and selling ..1",
-                            id_one,
-                            best_ask_one,
-                            major_side,
-                        )
+                        if not minor_filled:
+                            stop_loss_hit = True
+                            stop_loss_time = time.time()
+                            print(
+                                "stop loss hit and selling ..1",
+                                id_one,
+                                best_ask_one,
+                                major_side,
+                            )
+                            minor_order_placed = False
+                            major_taken = False
+                            reverse = True
 
                     if id_two == major_id and best_ask_two <= 0.50:
-                        stop_loss_hit = True
-                        stop_loss_time = time.time()
-                        print(
-                            "stop loss hit and selling ..2",
-                            id_two,
-                            best_ask_two,
-                            major_side,
-                        )
+                        if not minor_filled:
+                            stop_loss_hit = True
+                            stop_loss_time = time.time()
+                            print(
+                                "stop loss hit and selling ..2",
+                                id_two,
+                                best_ask_two,
+                                major_side,
+                            )
+                            minor_order_placed = False
+                            major_taken = False
+                            reverse = True
 
                 if minor_order_placed and not minor_filled:
                     if id_one == minor_id and best_ask_one <= 0.14:
