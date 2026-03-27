@@ -319,8 +319,8 @@ def bot():
                 # major side 0.80–0.85
                 if not major_taken:
                     # if 0.80 <= best_ask_one <= 0.85:
-                    if 0.60 <= best_ask_one:
 
+                    if 0.85 <= best_ask_one and reverse:
                         major_taken = True
                         major_side = "UP" if id_one == up_id else "DOWN"
                         major_id = id_one
@@ -340,7 +340,46 @@ def bot():
                             )
 
                     # elif 0.80 <= best_ask_two <= 0.85:
-                    elif 0.60 <= best_ask_two:
+                    if 0.85 <= best_ask_two and reverse:
+                        major_taken = True
+                        major_side = "UP" if id_two == up_id else "DOWN"
+                        major_id = id_two
+                        if reverse:
+                            print(
+                                "major side taken reversed market ..2",
+                                major_id,
+                                best_ask_two,
+                                major_side,
+                            )
+                        else:
+                            print(
+                                "major side taken ..2",
+                                major_id,
+                                best_ask_two,
+                                major_side,
+                            )
+
+                    if 0.60 <= best_ask_one and not reverse:
+                        major_taken = True
+                        major_side = "UP" if id_one == up_id else "DOWN"
+                        major_id = id_one
+                        if reverse:
+                            print(
+                                "major side taken reversed market ..1",
+                                major_id,
+                                best_ask_one,
+                                major_side,
+                            )
+                        else:
+                            print(
+                                "major side taken ..1",
+                                major_id,
+                                best_ask_one,
+                                major_side,
+                            )
+
+                    # elif 0.80 <= best_ask_two <= 0.85:
+                    if 0.60 <= best_ask_two and not reverse:
                         major_taken = True
                         major_side = "UP" if id_two == up_id else "DOWN"
                         major_id = id_two
