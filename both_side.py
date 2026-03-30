@@ -320,7 +320,7 @@ def bot():
                 if not major_taken:
                     # if 0.80 <= best_ask_one <= 0.85:
 
-                    if 0.85 <= best_ask_one and reverse:
+                    if 0.80 <= best_ask_one and reverse:
                         major_taken = True
                         major_side = "UP" if id_one == up_id else "DOWN"
                         major_id = id_one
@@ -340,7 +340,7 @@ def bot():
                             )
 
                     # elif 0.80 <= best_ask_two <= 0.85:
-                    if 0.85 <= best_ask_two and reverse:
+                    if 0.80 <= best_ask_two and reverse:
                         major_taken = True
                         major_side = "UP" if id_two == up_id else "DOWN"
                         major_id = id_two
